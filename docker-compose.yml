@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  rabbitmq-1:
+    image: rabbitmq:3.12.7-management
+    container_name: rabbitmq-1
+    hostname: rabbitmq-1
+    volumes:
+      - "./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro"
+    environment:
+      - RABBITMQ_DEFAULT_VHOST=/
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=pass.123
+      - RABBITMQ_ERLANG_COOKIE=yowkotest
+    ports:
+      - "5672:5672"
+      - "5552:5552"
+      - "15672:15672"
+  
+  rabbitmq-2:
+    # 如果需要調整 rabbitmq 的設定，可以在調整完 cluster-entrypoint.sh 後，將下方三行取消註解，自行 build image
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: yowko/rabbitmq:3.12.7-management
+    hostname: rabbitmq-2
+    container_name: rabbitmq-2
+    volumes:
+      - "./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=yowkotest
+    depends_on:
+      - rabbitmq-1
+    ports:
+      - "5673:5672"
+      - "5553:5552"
+      - "15673:15672"
+  
+  rabbitmq-3:
+    image: yowko/rabbitmq:3.12.7-management
+    container_name: rabbitmq-3
+    hostname: rabbitmq-3
+    volumes:
+      - "./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=yowkotest
+    depends_on:
+      - rabbitmq-1
+    ports:
+      - "5674:5672"
+      - "5554:5552"
+      - "15674:15672"
